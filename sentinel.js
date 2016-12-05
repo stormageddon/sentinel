@@ -139,8 +139,8 @@ function sendEmail() {
     // }
     return;
     let opts = {
-        from: 'therubikscubekid@gmail.com',
-        to: ['mike@caputo.io', 'therubikscubekid@gmail.com'],
+        from: process.env.FROM_EMAIL,
+        to: process.env.TO_EMAIL,
         subject: 'Sentinel - Outdated Policies Found'
     };
 
