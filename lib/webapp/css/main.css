@@ -56,8 +56,8 @@ a:hover {
     height: 150px;
 }
 
-body {
-    height: 600px;
+html, body {
+    height: 100%;
 }
 
 form {
