@@ -25,30 +25,6 @@ let client = new twilio.RestClient(accountSid, authToken);
 let numChanged = 0;
 let index = 0;
 
-
-
-/*http.get(VIRMEDICA_CONFLUENCE_URL, function(err, response) {
-    let body = JSON.parse(response.body);
-    let htmlString = body.body.storage.value;
-
-    // Parse the html string response to get all the links from the Confluence page
-    jsdom.env(htmlString, ["http://code.jquery.com/jquery.js"], function(err, window) {
-        console.log(`Checking ${window.$("a").length} policies for updates...`);
-        window.$("a").each( function() {
-            let linkUrl = cleanString(window.$(this).text());
-            let prefix = linkUrl.substring(linkUrl.length - 4); // Check for a .pdf extension at the end of the url
-
-            if (prefix === '.pdf') {
-                downloadPDF(linkUrl, window.$("a").length);
-            }
-
-            else {
-                downloadHtmlSite(linkUrl, window.$("a").length)
-            }
-        });
-    });
-}).auth(process.env.SENTINEL_CONFLUENCE_USER, process.env.SENTINEL_CONFLUENCE_PASSWORD);*/
-
 function run() {
     // read in urls from config
     config.sites.forEach(function(site) {
