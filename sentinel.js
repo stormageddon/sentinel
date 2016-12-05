@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Created by mcaputo on 11/29/16.
  */
@@ -6,6 +8,7 @@
 
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
+const BASE_PATH = process.env.SENTINEL_BASE_PATH;
 
 const http = require('request');
 const jsdom = require('jsdom');
@@ -15,7 +18,7 @@ const url = require('url');
 const Mailgun = require('mailgun').Mailgun;
 const mg = new Mailgun(MAILGUN_API_KEY);
 const twilio = require('twilio');
-const config = require('./lib/config.json');
+const config = require(BASE_PATH + '/lib/config.json');
 
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -104,7 +107,7 @@ function generateHash(str) {
 }
 
 function writeHash(fileName, hash) {
-    fs.writeFile('hashes/' + fileName + '.md5', hash, function(err) {
+    fs.writeFile(BASE_PATH + '/hashes/' + fileName + '.md5', hash, function(err) {
         if (err) {
             console.log(err);
             throw err;
@@ -113,7 +116,7 @@ function writeHash(fileName, hash) {
 }
 
 function compareHash(fileName, newHash, callback) {
-    fs.readFile('hashes/' + fileName + '.md5', {encoding: 'utf-8'}, function(err, data) {
+    fs.readFile(BASE_PATH + '/hashes/' + fileName + '.md5', {encoding: 'utf-8'}, function(err, data) {
         if (err) {
             console.log('Loading new policy');
             return callback(true);
