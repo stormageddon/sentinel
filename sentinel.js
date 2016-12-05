@@ -4,7 +4,6 @@
 
 'use strict';
 
-const VIRMEDICA_CONFLUENCE_URL = 'http://virmedica.atlassian.net/wiki/rest/api/content/36864032\?expand\=body.storage.content';
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 
@@ -18,10 +17,10 @@ const mg = new Mailgun(MAILGUN_API_KEY);
 const twilio = require('twilio');
 const config = require('./lib/config.json');
 
-let accountSid = process.env.TWILIO_SID;
-let authToken = process.env.TWILIO_AUTH_TOKEN;
+const accountSid = process.env.TWILIO_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = new twilio.RestClient(accountSid, authToken);
 
-let client = new twilio.RestClient(accountSid, authToken);
 let numChanged = 0;
 let index = 0;
 
