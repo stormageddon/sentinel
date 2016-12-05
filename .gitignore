@@ -4,3 +4,4 @@ node_modules/
 npm-debug.log
 hashes/
 lib/config.json
+log/
