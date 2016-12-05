@@ -1,0 +1,72 @@
+.hero-link {
+    color: #fff;
+    font-family: Lato;
+    font-size: 16px;
+    padding: 5px;
+    margin: 5px;
+    display: block;
+}
+
+.navbar {
+    border: none !important;
+    border-radius: 0px !important;
+}
+
+a:hover {
+     color: #fff;
+    text-decoration: none;
+ }
+
+.content {
+    margin-top: 50px;
+    background-color: #EEE;
+    height: 100%;
+    text-align: center;
+    display: block;
+}
+
+.sentinel-data-inputs {
+    /*margin: 16px;*/
+}
+
+.sentinel-input {
+    margin: 16px;
+}
+
+.submit-button {
+    margin: 16px;sontent
+}
+
+#save-alert-success {
+    opacity: 0;
+    visibility: hidden;
+    transition: visibility 0s, opacity 0.5s linear;
+}
+
+#save-alert-danger {
+    opactiy: 0;
+    visibility: hidden;
+    display: none;
+    transition: visibility 0s, opacity 0.5s linear;
+}
+
+.footer {
+    background-color: #424242;
+    width: 100%;
+    height: 150px;
+}
+
+body {
+    height: 600px;
+}
+
+form {
+    margin: 0 auto;
+    display: inline-block;
+    text-align: center;
+    width: 30%;
+}
+
+form .input-group {
+    width: 100%;
+}

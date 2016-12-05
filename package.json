@@ -9,8 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "boom": "^4.2.0",
     "crypto": "0.0.3",
+    "hapi": "^16.0.1",
+    "inert": "^4.0.3",
     "jsdom": "^9.8.3",
-    "request": "^2.79.0"
+    "mailgun": "^0.5.0",
+    "mailgun-js": "^0.7.14",
+    "request": "^2.79.0",
+    "twilio": "^2.11.1"
   }
 }
