@@ -162,7 +162,7 @@ function sendText() {
     // }
 
     client.messages.create({
-        body: 'Sentinel Report - ' + output,
+        body: `Sentinel Report (${new Date()}) - ${output}`,
         to: process.env.TWILIO_TO_NUMBER,
         from: process.env.TWILIO_FROM_NUMBER
     }, function(err, message) {
