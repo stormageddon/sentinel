@@ -31,7 +31,7 @@ let index = 0;
 
 function run() {
     // read in urls from config
-    config.sites.forEach(function(site) {
+    config.sites.forEach(function (site) {
         console.log('site:', site.url);
         let linkUrl = cleanString(site.url);
 
@@ -47,7 +47,7 @@ function run() {
 let output = '';
 
 function downloadHtmlSite(siteUrl, len) {
-    http.get(cleanString(siteUrl), function(err, response) {
+    http.get(cleanString(siteUrl), function (err, response) {
 
         if (err) {
             console.log('err:', err);
@@ -57,14 +57,15 @@ function downloadHtmlSite(siteUrl, len) {
         fileName += crypto.createHash('md5').update(siteUrl).digest('hex'); // Give each file a unique name
         let dataHash = crypto.createHash('md5').update(response.body).digest('hex'); // Get site data as md5 hash
 
-        compareHash(fileName, dataHash, function(matches) {
+        compareHash(fileName, dataHash, function (matches) {
             // Site has been updated
             if (!matches) {
                 console.log(`${siteUrl} has changed`);
                 output += `${siteUrl} has changed\n`;
-                saveSnapshot(url.parse(siteUrl).hostname, response.body, 'html');
+                saveSnapshot(fileName, response, 'html');
                 updateLastModified(siteUrl);
             }
+
             index++;
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
@@ -78,49 +79,64 @@ function downloadHtmlSite(siteUrl, len) {
 }
 
 function downloadPDF(pdfUrl, len) {
-    http.get(pdfUrl, function(err, response) {
-        let pdfName = url.parse(pdfUrl).hostname + '-';
-        pdfName += generateHash(pdfUrl);
+    let pdfName = url.parse(pdfUrl).hostname + '-';
+    pdfName += generateHash(pdfUrl);
+
+    let detour = require('detour-stream');
+    let pdfMatches = true;
+
+    http.get(pdfUrl, function (err, response) {
+
         let dataHash = generateHash(response.body);
         //
-        compareHash(pdfName, dataHash, function(matches) {
+        compareHash(pdfName, dataHash, function (matches) {
+            pdfMatches = matches;
+            if (!matches) {
+                console.log(`${pdfUrl} has changed`);
+                output += `${pdfUrl} has changed\n`;
 
-           if (!matches) {
-               console.log(`${pdfUrl} has changed`);
-               output += `${pdfUrl} has changed\n`;
-               saveSnapshot(url.parse(pdfUrl).hostname, response.body, 'pdf');
-               updateLastModified(pdfUrl);
-           }
-           index++;
+                // hack to pipe the pdf to file
+                // Redownload the file until I can get streams working right
+                http.get(pdfUrl).pipe(fs.createWriteStream(`${BASE_PATH}/snapshots/${pdfName}-${moment().format('MM-DD-YY')}.pdf`));
+
+                updateLastModified(pdfUrl);
+            }
+
+            index++;
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
                 output += `Found ${numChanged} outdated policies\n`;
                 //sendEmail();
                 //sendText();
             }
-           writeHash(pdfName, dataHash);
+            writeHash(pdfName, dataHash);
         });
     });
 }
 
 // Store a snapshot of the html content for future diffs
-function saveSnapshot(site, content, extension) {
-    console.log('content to store', content);
+function saveSnapshot(site, response, extension) {
     let filename = `${BASE_PATH}/snapshots/${site}-${moment().format('MM-DD-YY')}.${extension}`;
     console.log('filename:', filename);
-    fs.writeFile(filename, content, function(err) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    if (extension === 'html') {
+        fs.writeFile(filename, response.body, function (err) {
+            if (err) {
+                console.log(err);
+                throw err;
+            }
+        });
+    }
+    else {
+        response.pipe(filename);
+    }
+
 }
 
 // Update the lastUpdated field of the site configuration
 function updateLastModified(url) {
-    config.sites.map(function(site, index) {
+    config.sites.map(function (site, index) {
         console.log(`${index}: ${site.url} ${site.last_updated}`);
-        if(url === site.url) {
+        if (url === site.url) {
             config.sites[index].last_updated = moment().format('MM/DD/YY');
             saveConfigFile();
         }
@@ -128,7 +144,7 @@ function updateLastModified(url) {
 }
 
 function saveConfigFile() {
-    fs.writeFile(BASE_PATH + '/lib/config.json', JSON.stringify(config), function(err) {
+    fs.writeFile(BASE_PATH + '/lib/config.json', JSON.stringify(config), function (err) {
         if (err) {
             throw err(err);
         }
@@ -144,7 +160,7 @@ function generateHash(str) {
 }
 
 function writeHash(fileName, hash) {
-    fs.writeFile(BASE_PATH + '/hashes/' + fileName + '.md5', hash, function(err) {
+    fs.writeFile(BASE_PATH + '/hashes/' + fileName + '.md5', hash, function (err) {
         if (err) {
             console.log(err);
             throw err;
@@ -153,7 +169,7 @@ function writeHash(fileName, hash) {
 }
 
 function compareHash(fileName, newHash, callback) {
-    fs.readFile(BASE_PATH + '/hashes/' + fileName + '.md5', {encoding: 'utf-8'}, function(err, data) {
+    fs.readFile(BASE_PATH + '/hashes/' + fileName + '.md5', {encoding: 'utf-8'}, function (err, data) {
         if (err) {
             console.log('Loading new policy');
             return callback(true);
@@ -187,8 +203,8 @@ function sendEmail() {
     console.log(opts.from, opts.to, opts.subject, output);
     console.log(process.env.MAILGUN_API_KEY);
 
-    mg.sendText(opts.from, opts.to, opts.subject, output, function(error, body) {
-       console.log('mail error:', error);
+    mg.sendText(opts.from, opts.to, opts.subject, output, function (error, body) {
+        console.log('mail error:', error);
     });
 }
 
@@ -202,7 +218,7 @@ function sendText() {
         body: `Sentinel Report (${moment().format('hh:mm MM/DD/YY')}) - ${output}`,
         to: process.env.TWILIO_TO_NUMBER,
         from: process.env.TWILIO_FROM_NUMBER
-    }, function(err, message) {
+    }, function (err, message) {
         if (err) {
             console.log(err);
         }
