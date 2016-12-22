@@ -73,8 +73,8 @@ function downloadHtmlSite(siteUrl, len) {
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
                 output += `Found ${numChanged} outdated policies\n`;
-                // sendEmail();
-                // sendText();
+                sendEmail();
+                sendText();
             }
             writeHash(fileName, dataHash);
         });
@@ -88,6 +88,10 @@ function downloadPDF(pdfUrl, len) {
     let pdfMatches = true;
 
     http.get(pdfUrl, function (err, response) {
+
+	if (err) {
+	    throw(err);
+	}
 
         let dataHash = generateHash(response.body);
         //
@@ -109,8 +113,8 @@ function downloadPDF(pdfUrl, len) {
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
                 output += `Found ${numChanged} outdated policies\n`;
-                //sendEmail();
-                //sendText();
+                sendEmail();
+                sendText();
             }
             writeHash(pdfName, dataHash);
         });
