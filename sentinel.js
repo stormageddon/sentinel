@@ -85,7 +85,6 @@ function downloadPDF(pdfUrl, len) {
     let pdfName = url.parse(pdfUrl).hostname + '-';
     pdfName += generateHash(pdfUrl);
 
-    let detour = require('detour-stream');
     let pdfMatches = true;
 
     http.get(pdfUrl, function (err, response) {
