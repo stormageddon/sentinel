@@ -57,11 +57,14 @@ function downloadHtmlSite(siteUrl, len) {
         fileName += crypto.createHash('md5').update(siteUrl).digest('hex'); // Give each file a unique name
         let dataHash = crypto.createHash('md5').update(response.body).digest('hex'); // Get site data as md5 hash
 
-        compareHash(fileName, dataHash, function (matches) {
+        compareHash(fileName, dataHash, function (matches, newPolicy) {
             // Site has been updated
             if (!matches) {
                 console.log(`${siteUrl} has changed`);
                 output += `${siteUrl} has changed\n`;
+            }
+
+            if (!matches || newPolicy) {
                 saveSnapshot(fileName, response, 'html');
                 updateLastModified(siteUrl);
             }
@@ -89,12 +92,13 @@ function downloadPDF(pdfUrl, len) {
 
         let dataHash = generateHash(response.body);
         //
-        compareHash(pdfName, dataHash, function (matches) {
+        compareHash(pdfName, dataHash, function (matches, newPolicy) {
             pdfMatches = matches;
             if (!matches) {
                 console.log(`${pdfUrl} has changed`);
                 output += `${pdfUrl} has changed\n`;
-
+            }
+            if (!matches || newPolicy) {
                 // hack to pipe the pdf to file
                 // Redownload the file until I can get streams working right
                 http.get(pdfUrl).pipe(fs.createWriteStream(`${BASE_PATH}/snapshots/${pdfName}-${moment().format('MM-DD-YY')}.pdf`));
@@ -172,7 +176,8 @@ function compareHash(fileName, newHash, callback) {
     fs.readFile(BASE_PATH + '/hashes/' + fileName + '.md5', {encoding: 'utf-8'}, function (err, data) {
         if (err) {
             console.log('Loading new policy');
-            return callback(true);
+
+            return callback(true, true);
         }
         let matches = data === newHash;
 
@@ -180,7 +185,7 @@ function compareHash(fileName, newHash, callback) {
             numChanged++;
         }
 
-        return callback(matches);
+        return callback(matches, false);
     });
 }
 
