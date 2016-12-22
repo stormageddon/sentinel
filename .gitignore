@@ -3,5 +3,6 @@ node_modules/
 .DS_Store
 npm-debug.log
 hashes/
+snapshots/
 lib/config.json
 log/

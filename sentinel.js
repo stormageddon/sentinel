@@ -18,7 +18,9 @@ const url = require('url');
 const Mailgun = require('mailgun').Mailgun;
 const mg = new Mailgun(MAILGUN_API_KEY);
 const twilio = require('twilio');
+const moment = require('moment');
 const config = require(BASE_PATH + '/lib/config.json');
+
 
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -32,12 +34,10 @@ function run() {
     config.sites.forEach(function(site) {
         console.log('site:', site.url);
         let linkUrl = cleanString(site.url);
-        let prefix = linkUrl.substring(linkUrl.length - 4); // Check for a .pdf extension at the end of the url
 
-        if (prefix === '.pdf') {
+        if (site.type === 'pdf') {
             downloadPDF(linkUrl, config.sites.length);
         }
-
         else {
             downloadHtmlSite(linkUrl, config.sites.length);
         }
@@ -58,16 +58,19 @@ function downloadHtmlSite(siteUrl, len) {
         let dataHash = crypto.createHash('md5').update(response.body).digest('hex'); // Get site data as md5 hash
 
         compareHash(fileName, dataHash, function(matches) {
+            // Site has been updated
             if (!matches) {
                 console.log(`${siteUrl} has changed`);
                 output += `${siteUrl} has changed\n`;
+                saveSnapshot(url.parse(siteUrl).hostname, response.body, 'html');
+                updateLastModified(siteUrl);
             }
             index++;
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
                 output += `Found ${numChanged} outdated policies\n`;
-                sendEmail();
-                sendText();
+                // sendEmail();
+                // sendText();
             }
             writeHash(fileName, dataHash);
         });
@@ -85,16 +88,50 @@ function downloadPDF(pdfUrl, len) {
            if (!matches) {
                console.log(`${pdfUrl} has changed`);
                output += `${pdfUrl} has changed\n`;
+               saveSnapshot(url.parse(pdfUrl).hostname, response.body, 'pdf');
+               updateLastModified(pdfUrl);
            }
            index++;
             if (index >= len) {
                 console.log(`Found ${numChanged} outdated policies`);
                 output += `Found ${numChanged} outdated policies\n`;
-                sendEmail();
-                sendText();
+                //sendEmail();
+                //sendText();
             }
            writeHash(pdfName, dataHash);
         });
+    });
+}
+
+// Store a snapshot of the html content for future diffs
+function saveSnapshot(site, content, extension) {
+    console.log('content to store', content);
+    let filename = `${BASE_PATH}/snapshots/${site}-${moment().format('MM-DD-YY')}.${extension}`;
+    console.log('filename:', filename);
+    fs.writeFile(filename, content, function(err) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
+// Update the lastUpdated field of the site configuration
+function updateLastModified(url) {
+    config.sites.map(function(site, index) {
+        console.log(`${index}: ${site.url} ${site.last_updated}`);
+        if(url === site.url) {
+            config.sites[index].last_updated = moment().format('MM/DD/YY');
+            saveConfigFile();
+        }
+    });
+}
+
+function saveConfigFile() {
+    fs.writeFile(BASE_PATH + '/lib/config.json', JSON.stringify(config), function(err) {
+        if (err) {
+            throw err(err);
+        }
     });
 }
 
@@ -162,7 +199,7 @@ function sendText() {
     // }
 
     client.messages.create({
-        body: `Sentinel Report (${new Date()}) - ${output}`,
+        body: `Sentinel Report (${moment().format('hh:mm MM/DD/YY')}) - ${output}`,
         to: process.env.TWILIO_TO_NUMBER,
         from: process.env.TWILIO_FROM_NUMBER
     }, function(err, message) {
