@@ -18,7 +18,14 @@
     <form id="add-site-form" action="javascript:submitSite()">
         <div class="input-group sentinel-data-inputs">
             <input type="text" placeholder="Site Name" class="form-control sentinel-input" id="siteName">
-            <input type="text" placeholder="Url" class="form-control sentinel-input" id="urlInput">
+            <span>
+                <input type="text" placeholder="Url" class="form-control sentinel-input" id="url-input">
+                <select id="type-checker">
+                    <option value="pdf">PDF</option>
+                    <option value="html">HTML</option>
+                </select>
+            </span>
+
         </div>
         <button class="btn btn-primary submit-button" type="submit">Save</button>
     </form>

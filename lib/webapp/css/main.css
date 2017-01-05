@@ -43,17 +43,13 @@ a:hover {
     display: inherit;
 }
 
-
-.sentinel-data-inputs {
-    /*margin: 16px;*/
-}
-
 .sentinel-input {
     margin: 16px;
+    width: 80% !important;
 }
 
 .submit-button {
-    margin: 16px;sontent
+    margin: 16px;
 }
 
 #save-alert-success {
@@ -91,6 +87,15 @@ form {
 
 form .input-group {
     width: 100%;
+}
+
+#url-input {
+    float: left;
+}
+
+#type-checker {
+    float: right;
+    margin-top: 23px;
 }
 
 .url-label {
